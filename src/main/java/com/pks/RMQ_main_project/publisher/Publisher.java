@@ -55,42 +55,22 @@ public class Publisher {
     @Autowired
    private DynamicQueueService dynamicQueueService;
     
-    /**
-     * Sends a string message to the specified queue using the default exchange
-     * 
-     * @param message The message content as string
-     * @param queueName The target queue name
-     * @return Result status message
-     */
+   
     public String sendStringMessage(String message, String queueName) {
     	log.info("queueName is : "+queueName);
     	log.info("message in controller is: {}", message);
         return sendMessage(message, queueName, defaultExchange, queueName);
     }
     
-    /**
-     * Sends an object message (converted to JSON) to the specified queue
-     * 
-     * @param message The object to be sent as message
-     * @param queueName The target queue name
-     * @return Result status message
-     */
+   
    
     public String sendObjectMessage(JsonMessage request) {
     	String message = request.getMessage();
-    	String queueName = request.getConsumerName();
+    	String queueName = request.getRevId();
+    	String exchangeName= request.getExchName();
         return sendMessage(message, queueName, defaultExchange, queueName);
     }
     
-    /**
-     * Sends a message with custom routing and exchange configuration
-     * 
-     * @param message Message content (String or Object)
-     * @param queueName Queue name
-     * @param exchangeName Exchange name
-     * @param routingKey Routing key
-     * @return Result status message
-     */
     public String sendMessage(Object message, String queueName, String exchangeName, String routingKey) {
         log.info("Sending message to queue: {} via exchange: {} with routing key: {}", 
                 queueName, exchangeName, routingKey);

@@ -20,10 +20,14 @@ import com.pks.RMQ_main_project.dynamicQ.DynamicQueueService;
 import com.pks.RMQ_main_project.publisher.Publisher;
 
 import entity.JsonMessage;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/rmqapi/v1")
 @CrossOrigin("*")
+@Tag(name = "RabbitMQ API", description = "Endpoints for RabbitMQ messaging operations")
 public class MainController {
 	
 	@Autowired
@@ -34,34 +38,50 @@ public class MainController {
 	
 	private static final Logger log = LoggerFactory.getLogger(MainController.class);
 	
+	
+	
+	@Operation(summary = "Add a school", description = "Adds a new school with the specified name")
 	@PostMapping("/addSchool")
-	public ResponseEntity<String> addResturant(@RequestParam("name") String SName)
+	public ResponseEntity<String> addResturant(
+			@Parameter(description = "School name") @RequestParam("name") String SName)
 	{
 		log.info("My scchool name" + SName);
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 	
+	@Operation(summary = "Publish a message", description = "Publishes a string message to a specific recipient")
 	@GetMapping("/publish")
-	public ResponseEntity<String> sendMessage(@RequestParam("msg") String msg,@RequestParam("revId") String revId) throws Exception{
+	public ResponseEntity<String> sendMessage(
+			@Parameter(description = "Message content") @RequestParam("msg") String msg,
+			@Parameter(description = "Reservation ID") @RequestParam("revId") String revId) throws Exception{
 		log.info("Inside Controller");
 		log.info("message in controller is: {}", msg);
 		return new ResponseEntity<String>(publisher.sendStringMessage(msg,revId),HttpStatus.OK);
 	}
+	
+	@Operation(summary = "Publish JSON message", description = "Publishes a JSON message to RabbitMQ")
 	@PostMapping("/publish")
-	public ResponseEntity<String> sendMessage(@RequestBody JsonMessage request){
+	public ResponseEntity<String> sendMessage(
+			@Parameter(description = "JSON message object", required = true) @RequestBody JsonMessage request){
 	                                           
 	    log.info("Received message: {}", request.getMessage());
 	    return new ResponseEntity<>(publisher.sendObjectMessage(request), HttpStatus.OK);
 	}
 	
+	@Operation(summary = "Add reservation", description = "Creates a new reservation with specified ID and table number")
 	@PostMapping("/reservation")
-	public ResponseEntity<String> addReservation(@RequestParam("revId") String revId,@RequestParam("tableNo") String tableNo) throws Exception{
+	public ResponseEntity<String> addReservation(
+			@Parameter(description = "Reservation ID") @RequestParam("revId") String revId,
+			@Parameter(description = "Table number") @RequestParam("tableNo") String tableNo) throws Exception{
 		log.info("Inside Controller");
 		return new ResponseEntity<String>(dynamicQueService.addReservation(revId,tableNo),HttpStatus.OK);
 	}
 	
+	
+	@Operation(summary = "Delete reservation", description = "Removes an existing reservation by ID")
 	@GetMapping("/deleteReservation")
-	public ResponseEntity<String> deleteReservation(@RequestParam("revId") String revId) throws Exception{
+	public ResponseEntity<String> deleteReservation(
+			@Parameter(description = "Reservation ID") @RequestParam("revId") String revId) throws Exception{
 		log.info("Inside Controller");
 		return new ResponseEntity<String>(dynamicQueService.deleteReservation(revId),HttpStatus.OK);
 	}
