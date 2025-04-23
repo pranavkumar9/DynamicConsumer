@@ -63,7 +63,7 @@ public class DynamicQueueService {
             reservationMap.put(reservationId, tableNo);
             
             // Set up consumer
-            addConsumerToQueue(reservationId);
+//            addConsumerToQueue(reservationId);
             
             log.info("Successfully created reservation queue: {} for table: {}", reservationId, tableNo);
             return reservationId;
@@ -103,23 +103,23 @@ public class DynamicQueueService {
             throw new QueueOperationException("Failed to delete reservation", e);
         }
     }
-
-    private void addConsumerToQueue(String queueName) {
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(queueName);
-        container.setPrefetchCount(1);
-        container.setConcurrentConsumers(1);
-
-        DynamicConsumer consumer = new DynamicConsumer(queueName, "AutoConsumer");
-        MessageListenerAdapter adapter = new MessageListenerAdapter(consumer, "receive");
-        container.setMessageListener(adapter);
-        container.setAutoStartup(true);
-        container.start();
-
-        listenerContainers.put(queueName, container);
-        log.info("Consumer attached to queue: {}", queueName);
-    }
+    //commenting adding consumer
+//    private void addConsumerToQueue(String queueName) {
+//        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+//        container.setConnectionFactory(connectionFactory);
+//        container.setQueueNames(queueName);
+//        container.setPrefetchCount(1);
+//        container.setConcurrentConsumers(1);
+//
+//        DynamicConsumer consumer = new DynamicConsumer(queueName, "AutoConsumer");
+//        MessageListenerAdapter adapter = new MessageListenerAdapter(consumer, "receive");
+//        container.setMessageListener(adapter);
+//        container.setAutoStartup(true);
+//        container.start();
+//
+//        listenerContainers.put(queueName, container);
+//        log.info("Consumer attached to queue: {}", queueName);
+//    }
 
     public Map<String, String> getActiveReservations() {
         return new ConcurrentHashMap<>(reservationMap);
