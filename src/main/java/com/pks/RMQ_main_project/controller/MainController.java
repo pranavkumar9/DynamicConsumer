@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,16 +40,6 @@ public class MainController {
 	private static final Logger log = LoggerFactory.getLogger(MainController.class);
 	
 	
-	
-	@Operation(summary = "Add a school", description = "Adds a new school with the specified name")
-	@PostMapping("/addSchool")
-	public ResponseEntity<String> addResturant(
-			@Parameter(description = "School name") @RequestParam("name") String SName)
-	{
-		log.info("My scchool name" + SName);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
-	
 	@Operation(summary = "Publish a message", description = "Publishes a string message to a specific recipient")
 	@GetMapping("/publish")
 	public ResponseEntity<String> sendMessage(
@@ -68,13 +59,12 @@ public class MainController {
 	    return new ResponseEntity<>(publisher.sendObjectMessage(request), HttpStatus.OK);
 	}
 	
-	@Operation(summary = "Add reservation", description = "Creates a new reservation with specified ID and table number")
+	@Operation(summary = "Add reservation", description = "Creates a new reservation with specified ID")
 	@PostMapping("/reservation")
 	public ResponseEntity<String> addReservation(
-			@Parameter(description = "Reservation ID") @RequestParam("revId") String revId,
-			@Parameter(description = "Table number") @RequestParam("tableNo") String tableNo) throws Exception{
+			@Parameter(description = "Reservation ID") @RequestParam("revId") String revId) throws Exception{
 		log.info("Inside Controller");
-		return new ResponseEntity<String>(dynamicQueService.addReservation(revId,tableNo),HttpStatus.OK);
+		return new ResponseEntity<String>(dynamicQueService.addReservation(revId),HttpStatus.OK);
 	}
 	
 	
@@ -84,6 +74,13 @@ public class MainController {
 			@Parameter(description = "Reservation ID") @RequestParam("revId") String revId) throws Exception{
 		log.info("Inside Controller");
 		return new ResponseEntity<String>(dynamicQueService.deleteReservation(revId),HttpStatus.OK);
+	}
+	
+	@Operation(summary = "Delete all reservation", description = "Removes an existing reservation by ID")
+	@DeleteMapping("/deleteAllReservation")
+	public void deleteAllReservation() throws Exception{
+		log.info("Inside Controller");
+		dynamicQueService.deleteAllReservation();
 	}
 	
 	
