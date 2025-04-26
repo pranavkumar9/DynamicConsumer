@@ -148,12 +148,9 @@ public class DynamicQueueService {
     public void deleteAllReservation() {
     	for(String revId : reservationMap)
     	{
-    		System.out.println("reservation deleting "+revId);
-    		if(reservationMap.contains(revId))
-            	System.out.println("revId exists "+revId	);
     		rabbitAdmin.deleteQueue(revId);
+    		reservationMap.remove(revId);
     	}
-    	reservationMap.clear();
     	
         
         listenerContainers.values().forEach(SimpleMessageListenerContainer::stop);
