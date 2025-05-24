@@ -18,42 +18,46 @@ public class DynamicConsumer {
         this.consumerName = consumerName;
         log.info("Created new consumer '{}' for queue '{}'", consumerName, queueName);
     }
-    public void receive(String messageContent) {
-        log.info("Received string Message'{}' for queues '{}'", messageContent,queueName);
+    
+    //commenting recieve msg
+//    public void receive(String messageContent) {
+//        log.info("Received string Message'{}' for queues '{}'", messageContent,queueName);
+//
+//        // Process message
+//        processMessage(messageContent);
+//    }
 
-        // Process message
-        processMessage(messageContent);
-    }
+    //commenting recieve msg
 
-    public void receive(Message message) {
-        MessageProperties properties = message.getMessageProperties();
-        String messageId = properties.getMessageId();
-        log.info("Received Object Message for queues: {}", message);
-        try {
-            log.debug("Consumer '{}' processing message {} from queue '{}'", 
-                     consumerName, messageId, queueName);
-
-            // Convert message body to string
-            String messageContent = new String(message.getBody());
-            
-            // Process the message
-            processMessage(messageContent, properties);
-            
-            // Update metrics
-            processedMessageCount++;
-            
-            log.info("Successfully processed message {} from queue '{}'. Total processed: {}", 
-                    messageId, queueName, processedMessageCount);
-            
-        } catch (Exception e) {
-            log.error("Error processing message {} from queue '{}': {}", 
-                     messageId, queueName, e.getMessage(), e);
-                     
-            // Determine if message should be retried or discarded
-            throw new AmqpRejectAndDontRequeueException("Non-retryable error occurred", e);
-          
-        }
-    }
+//    public void receive(Message message) {
+//        MessageProperties properties = message.getMessageProperties();
+//        String messageId = properties.getMessageId();
+//        log.info("Received Object Message for queues: {}", message);
+//        try {
+//            log.debug("Consumer '{}' processing message {} from queue '{}'", 
+//                     consumerName, messageId, queueName);
+//
+//            // Convert message body to string
+//            String messageContent = new String(message.getBody());
+//            
+//            // Process the message
+//            processMessage(messageContent, properties);
+//            
+//            // Update metrics
+//            processedMessageCount++;
+//            
+//            log.info("Successfully processed message {} from queue '{}'. Total processed: {}", 
+//                    messageId, queueName, processedMessageCount);
+//            
+//        } catch (Exception e) {
+//            log.error("Error processing message {} from queue '{}': {}", 
+//                     messageId, queueName, e.getMessage(), e);
+//                     
+//            // Determine if message should be retried or discarded
+//            throw new AmqpRejectAndDontRequeueException("Non-retryable error occurred", e);
+//          
+//        }
+//    }
 
     private void processMessage(String messageContent, MessageProperties properties) {
         // Here you can add your specific message processing logic
