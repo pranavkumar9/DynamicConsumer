@@ -1,6 +1,7 @@
 package com.pks.RMQ_main_project.dynamicQ;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ import jakarta.annotation.PreDestroy;
 public class DynamicQueueService {
     private static final Logger log = LoggerFactory.getLogger(DynamicQueueService.class);
     private final ConnectionFactory connectionFactory;
-    private final Map<String, String> reservationMap;
+    private final HashSet<String> reservationMap;
     private final Map<String, SimpleMessageListenerContainer> listenerContainers;
     
     @Autowired
@@ -29,7 +30,7 @@ public class DynamicQueueService {
 
     public DynamicQueueService(ConnectionFactory connectionFactory) {
     	this.connectionFactory = connectionFactory;
-        this.reservationMap = new ConcurrentHashMap<>();
+        this.reservationMap = new HashSet<>();
         this.listenerContainers = new ConcurrentHashMap<>();
     }
     
@@ -38,18 +39,18 @@ public class DynamicQueueService {
             throw new IllegalArgumentException("Reservation ID cannot be null");
         }
     	else {
-    		 return reservationMap.containsKey(reservationId);
+    		 return reservationMap.contains(reservationId);
     	}
     	
     }
     
 
-    public synchronized String addReservation(String reservationId, String tableNo) {
-        if (reservationId == null || tableNo == null) {
+    public synchronized String addReservation(String reservationId) {
+        if (reservationId == null) {
             throw new IllegalArgumentException("Reservation ID and table number cannot be null");
         }
 
-        if (reservationMap.containsKey(reservationId)) {
+        if (reservationMap.contains(reservationId)) {
             log.warn("Reservation ID {} already exists", reservationId);
             return String.format("Reservation ID: %s already exists", reservationId);
         }
@@ -60,12 +61,12 @@ public class DynamicQueueService {
             rabbitAdmin.declareQueue(dynamicQueue);
             
             // Add to our tracking map
-            reservationMap.put(reservationId, tableNo);
+            reservationMap.add(reservationId);
             
             // Set up consumer
-            addConsumerToQueue(reservationId);
+//            addConsumerToQueue(reservationId);
             
-            log.info("Successfully created reservation queue: {} for table: {}", reservationId, tableNo);
+            log.info("Successfully created reservation queue: {} for table: {}", reservationId);
             return reservationId;
             
         } catch (Exception e) {
@@ -79,7 +80,7 @@ public class DynamicQueueService {
             throw new IllegalArgumentException("Reservation ID cannot be null");
         }
 
-        if (!reservationMap.containsKey(reservationId)) {
+        if (!reservationMap.contains(reservationId)) {
             log.warn("Reservation ID {} does not exist", reservationId);
             return String.format("Reservation ID: %s does not exist", reservationId);
         }
@@ -103,27 +104,25 @@ public class DynamicQueueService {
             throw new QueueOperationException("Failed to delete reservation", e);
         }
     }
+    //commenting adding consumer
+//    private void addConsumerToQueue(String queueName) {
+//        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+//        container.setConnectionFactory(connectionFactory);
+//        container.setQueueNames(queueName);
+//        container.setPrefetchCount(1);
+//        container.setConcurrentConsumers(1);
+//
+//        DynamicConsumer consumer = new DynamicConsumer(queueName, "AutoConsumer");
+//        MessageListenerAdapter adapter = new MessageListenerAdapter(consumer, "receive");
+//        container.setMessageListener(adapter);
+//        container.setAutoStartup(true);
+//        container.start();
+//
+//        listenerContainers.put(queueName, container);
+//        log.info("Consumer attached to queue: {}", queueName);
+//    }
 
-    private void addConsumerToQueue(String queueName) {
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(queueName);
-        container.setPrefetchCount(1);
-        container.setConcurrentConsumers(1);
-
-        DynamicConsumer consumer = new DynamicConsumer(queueName, "AutoConsumer");
-        MessageListenerAdapter adapter = new MessageListenerAdapter(consumer, "receive");
-        container.setMessageListener(adapter);
-        container.setAutoStartup(true);
-        container.start();
-
-        listenerContainers.put(queueName, container);
-        log.info("Consumer attached to queue: {}", queueName);
-    }
-
-    public Map<String, String> getActiveReservations() {
-        return new ConcurrentHashMap<>(reservationMap);
-    }
+    //Active Id
     
     @PreDestroy
     public void shutdown() {
@@ -139,6 +138,21 @@ public class DynamicQueueService {
     }
 
     public void destroy() {
+        listenerContainers.values().forEach(SimpleMessageListenerContainer::stop);
+        listenerContainers.clear();
+        log.info("Cleaned up all message listener containers");
+    }
+    
+    
+    
+    public void deleteAllReservation() {
+    	for(String revId : reservationMap)
+    	{
+    		rabbitAdmin.deleteQueue(revId);
+    		reservationMap.remove(revId);
+    	}
+    	
+        
         listenerContainers.values().forEach(SimpleMessageListenerContainer::stop);
         listenerContainers.clear();
         log.info("Cleaned up all message listener containers");

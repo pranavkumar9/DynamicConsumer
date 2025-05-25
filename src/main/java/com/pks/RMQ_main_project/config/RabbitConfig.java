@@ -96,6 +96,7 @@ public class RabbitConfig {
     	    
     	   @Bean
     	   public Binding managerBinding(Queue managerQueue, TopicExchange topicExchange) {
+    		   log.info("Sending msg to manager queue");
     	       // Bind manager queue with # wildcard to receive all messages
     	       return BindingBuilder.bind(managerQueue).to(topicExchange).with("#");
     	   }
@@ -118,22 +119,24 @@ public class RabbitConfig {
         return container;
     }*/
     
-    @Bean
-    public MessageListenerContainer managerQueueListenerContainer(ConnectionFactory connectionFactory) {
-        log.info("Creating MessageListenerContainer for manager queue");
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        container.setQueueNames(MANAGER_QUEUE);
-        container.setPrefetchCount(10);
-        container.setConcurrentConsumers(1);
-        
-        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(new ManagerQueueConsumer(), "receive");
-        //listenerAdapter.setMessageConverter(new Jackson2JsonMessageConverter());
-        container.setMessageListener(listenerAdapter);
-        container.setAutoStartup(true);
-        
-        return container;
-    }
+    	   
+    	   //message Listener
+//    @Bean
+//    public MessageListenerContainer managerQueueListenerContainer(ConnectionFactory connectionFactory) {
+//        log.info("Creating MessageListenerContainer for manager queue");
+//        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+//        container.setConnectionFactory(connectionFactory);
+//        container.setQueueNames(MANAGER_QUEUE);
+//        container.setPrefetchCount(10);
+//        container.setConcurrentConsumers(1);
+//        
+//        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(new ManagerQueueConsumer(), "receive");
+//        //listenerAdapter.setMessageConverter(new Jackson2JsonMessageConverter());
+//        container.setMessageListener(listenerAdapter);
+//        container.setAutoStartup(true);
+//        
+//        return container;
+//    }
     
     @Bean
     public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
